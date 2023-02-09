@@ -63,9 +63,14 @@ app.get('/api/rename/pdfs/:anio/:mes/:dia', async (req, res) => {
     nuevoArray.forEach((i, index) => {    
         readFile(`\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\${i}`)
             .then(result =>{
-                fs.rename(`\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\${i}`, `\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\bo${pad(result[17], 8)}.pdf`, function(err) {
-                    if ( err ) console.log('ERROR: ' + err)
-                });
+                if(result[1] === 'Comitente' && result[10] === 'B O L E T O' && result[18].substring(0, 8) === 'Especie:') {
+                    fs.rename(`\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\${i}`, `\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\bo${pad(result[17], 8)}.pdf`, function
+                    (err) {
+                        if ( err ) console.log('ERROR: ' + err)
+                    });
+                } else {
+                    console.log('No es un boleto')
+                }
             })
     });
 
@@ -74,5 +79,5 @@ app.get('/api/rename/pdfs/:anio/:mes/:dia', async (req, res) => {
 
 
 const PORT = 7832;
-
+// 1 comitente, 10 Boleto, 18
 app.listen(PORT, () => console.log(`Servidor escuchando en el puerto ${PORT}`));
