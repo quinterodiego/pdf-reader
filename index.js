@@ -34,37 +34,44 @@ app.post('/api/rename', upload.array('myFiles', 12), (req, res, next) => {
     })
 });
 
-const fileNames = fs.readdirSync('./pdfs');
-const nuevoArray = fileNames.filter((file) => file.match('.pdf'))
-console.log(nuevoArray)
-function readFile(file){
-    const arr = []
-    return new Promise(function(resolve, reject){
-        new PdfReader().parseFileItems(file, function(err, item) {
-        if (err) reject(err);
-        else if (!item) resolve();
-        else if (item.text) {
-            arr.push(item.text.trim())
-            resolve(arr);
-        }
-        });
-    })
-}
-
-function pad(n, width, z) { 
-    z = z || '0'; 
-    n = n + ''; 
-    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n; 
-}
-
-nuevoArray.forEach((i, index) => {    
-    readFile(`./pdfs/${i}`)
-        .then(result =>{
-            fs.rename(`./pdfs/${i}`, `./pdfs/bo${pad(result[17], 8)}.pdf`, function(err) {
-                if ( err ) console.log('ERROR: ' + err);
+app.get('/api/rename/pdfs/:anio/:mes/:dia', async (req, res) => {
+    const { anio, mes, dia } = req.params
+    const fileNames = await fs.readdirSync(`\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}`);
+    const nuevoArray = await fileNames.filter((file) => file.match('.pdf'))
+    console.log(nuevoArray)
+    function readFile(file){
+        const arr = []
+        return new Promise(function(resolve, reject){
+            new PdfReader().parseFileItems(file, function(err, item) {
+            if (err) reject(err);
+            else if (!item) resolve();
+            else if (item.text) {
+                arr.push(item.text.trim())
+                resolve(arr);
+            }
             });
         })
-});
+    }
+    
+    function pad(n, width, z) { 
+        z = z || '0'; 
+        n = n + ''; 
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n; 
+    }
+    
+
+    nuevoArray.forEach((i, index) => {    
+        readFile(`\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\${i}`)
+            .then(result =>{
+                fs.rename(`\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\${i}`, `\\\\daredevil-cl\\Documentos\\Fin\\${anio}\\${mes}\\${dia}\\bo${pad(result[17], 8)}.pdf`, function(err) {
+                    if ( err ) console.log('ERROR: ' + err)
+                });
+            })
+    });
+
+    res.json({ message: 'Proceso terminado' })
+})
+
 
 const PORT = 8080;
 
